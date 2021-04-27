@@ -1,0 +1,17 @@
+cabal-version:      2.4
+name:               brickinvaders
+version:            0.1.0.0
+
+executable brickinvaders
+    main-is:          Main.hs
+
+    other-modules:    UI
+    build-depends:    base ^>=4.14.1.0
+                    , brick
+                    , extra
+                    , linear
+                    , vty
+                    , containers
+    hs-source-dirs:   app
+    default-language: Haskell2010
+    ghc-options:      -threaded -Wall
