@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module UI where
 
+import Data
 import qualified Brick.Widgets.Border as B
 import qualified Brick.Widgets.Border.Style as BS
 import qualified Brick.Widgets.Center as C
@@ -9,29 +10,39 @@ import Linear.V2 (V2(..))
 import Brick
   ( AttrMap,  Widget
   , vBox, hBox, withBorderStyle, str
-  , attrMap, withAttr, AttrName, on
+  , attrMap, withAttr, AttrName, fg
+  , emptyWidget, padRight, padTop, padAll, padBottom 
+  , hLimit, (<+>), Padding(..), (<=>)
   )
 
-type Name = ()
-type Coord = V2 Int
-data Tick = Tick
-data Cell = CanonCell | EmptyCell | ShotCell
-
-
-data Game = Game
-  { canon  :: Coord
-  , dead   :: Bool
-  , paused :: Bool
-  , shots :: [Coord] --cleanup??
-  } deriving (Show)
-
-
-height, width :: Int
-height = 20
-width = 20
-
 drawUI :: Game -> [Widget Name]
-drawUI g = [C.center $drawGrid g]
+drawUI g = [ C.center $ padRight (Pad 2) (drawStats g) <+> drawGrid g ]
+
+drawStats :: Game -> Widget Name
+drawStats g = hLimit 18
+  $ vBox [ drawGameOver (over g)
+         , dravLevel (level g)
+         , drawInfo
+         ]
+
+dravLevel :: Int -> Widget Name
+dravLevel n = withBorderStyle BS.unicodeBold
+  $ B.borderWithLabel (str " Level ")
+  $ C.hCenter
+  $ padAll 1
+  $ str $ show n
+
+drawInfo :: Widget Name
+drawInfo = withBorderStyle BS.unicodeBold
+  $ B.borderWithLabel (str " Info ")
+  $ C.hCenter
+  $ padAll 1
+  $ str "Fire : f" <=> str "Pause: p"
+
+drawGameOver :: Bool -> Widget Name
+drawGameOver o = if o
+     then withAttr gameOverAttr $ padTop (Pad 2) $ padBottom (Pad 2) $ C.hCenter $ str "GAME OVER"
+     else emptyWidget
 
 drawGrid :: Game -> Widget Name
 drawGrid g = withBorderStyle BS.unicodeBold
@@ -46,23 +57,26 @@ cellAt :: Game -> Coord -> Cell
 cellAt g c
       | c == canon g        = CanonCell
       | c `elem` shots g    = ShotCell
+      | c `elem` aliens g   = AlienCell
       | otherwise           = EmptyCell
 
 drawCell :: Cell -> Widget Name
-drawCell CanonCell = withAttr canonAttr cw
-drawCell ShotCell = withAttr shotAttr cw
-drawCell EmptyCell = withAttr emptyAttr cw
+drawCell CanonCell = withAttr canonAttr $str "⥎"
+drawCell ShotCell  = withAttr shotAttr $str "ᐞ"
+drawCell AlienCell = withAttr alienAttr $str "⛯"
+drawCell EmptyCell = withAttr emptyAttr $str " "
 
-cw :: Widget Name
-cw = str "  "
-
-theMap :: AttrMap
-theMap = attrMap V.defAttr
-  [ (canonAttr, V.blue `on` V.blue),
-    (shotAttr, V.red `on` V.red)
+attributeMap :: AttrMap
+attributeMap = attrMap V.defAttr
+  [ (canonAttr, fg V.blue `V.withStyle` V.bold),
+    (shotAttr, fg V.red `V.withStyle` V.bold),
+    (alienAttr, fg V.green `V.withStyle` V.bold),
+    (gameOverAttr, fg V.red `V.withStyle` V.bold)
   ]
 
-canonAttr, shotAttr, emptyAttr :: AttrName
+canonAttr, shotAttr, emptyAttr, gameOverAttr, alienAttr :: AttrName
 canonAttr = "canonAttr"
 shotAttr  = "shotAttr"
 emptyAttr = "emptyAttr"
+alienAttr = "alienAttr"
+gameOverAttr = "gameOver"
