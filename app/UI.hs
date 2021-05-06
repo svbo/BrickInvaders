@@ -21,12 +21,12 @@ drawUI g = [ C.center $ padRight (Pad 2) (drawStats g) <+> drawGrid g ]
 drawStats :: Game -> Widget Name
 drawStats g = hLimit 18
   $ vBox [ drawGameOver (over g)
-         , dravLevel (level g)
+         , drawLevel (lNext $level g)
          , drawInfo
          ]
 
-dravLevel :: Int -> Widget Name
-dravLevel n = withBorderStyle BS.unicodeBold
+drawLevel :: Int -> Widget Name
+drawLevel n = withBorderStyle BS.unicodeBold
   $ B.borderWithLabel (str " Level ")
   $ C.hCenter
   $ padAll 1
@@ -37,7 +37,7 @@ drawInfo = withBorderStyle BS.unicodeBold
   $ B.borderWithLabel (str " Info ")
   $ C.hCenter
   $ padAll 1
-  $ str "Fire:    f" <=> str "Pause:   p" <=> str "Restart: r"
+  $ str "Fire:    space" <=> str "Pause:   p    " <=> str "Restart: r    "
 
 drawGameOver :: Bool -> Widget Name
 drawGameOver o = if o

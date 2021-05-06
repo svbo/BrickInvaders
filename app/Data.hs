@@ -8,6 +8,13 @@ type Coord = V2 Int
 data Tick = Tick
 data Cell = CanonCell | EmptyCell | ShotCell | AlienCell
 
+data Level = Level
+  { lNext   :: Int
+  , lAliens :: [Alien]
+  , lSpeed  :: Int
+  , lShots  :: Int
+  } deriving (Show)
+
 data Alien = Alien 
   { coord :: Coord
   , hits  :: Int
@@ -17,26 +24,45 @@ data Game = Game
   { canon  :: Coord
   , paused :: Bool
   , over   :: Bool
-  , level  :: Int 
+  , level  :: Level 
   , shots  :: [Coord]
   , aliens :: [Alien]
   , count  :: Int
   } deriving (Show)
 
-game :: Game 
-game =  Game
+game ::Level ->  Game 
+game l = Game
         { canon  = V2 10 0
         , paused = False
         , shots  = []
         , over   = False
-        , level  = 1
-        , aliens = [Alien (V2 10 19) 2]
-        , count = 0
+        , level  = l
+        , aliens = lAliens l
+        , count  = 1
         }
+
+levels :: [Level]
+levels = [Level 
+          { lNext   = 1
+          , lAliens = createAliens 10 5 2 19 1
+          , lSpeed  = 20
+          , lShots  = 1
+          },
+          Level 
+          { lNext   = 2
+          , lAliens = createAliens 10 5 2 19 1 ++ createAliens 11 5 2 18 1
+          , lSpeed  = 19
+          , lShots  = 1
+          } ]
+
+--FromX -> nrOf -> offset -> Y -> hits
+createAliens:: Int -> Int -> Int -> Int -> Int -> [Alien]
+createAliens f n o y h = [Alien (V2 (f+x*o) y) h | x <- [0..n]]
 
 initGame :: IO Game
 initGame = do
-  return game
+  let l = levels!!0
+  return $game l
 
 height, width :: Int
 height = 20

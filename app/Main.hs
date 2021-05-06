@@ -39,7 +39,7 @@ handleEvent g (AppEvent Tick)                       = continue $ step g
 handleEvent g (VtyEvent (V.EvKey V.KRight []))      = continue $ move (+ 1) g
 handleEvent g (VtyEvent (V.EvKey V.KLeft []))       = continue $ move (subtract 1) g
 handleEvent g (VtyEvent (V.EvKey V.KEsc []))        = halt g
-handleEvent g (VtyEvent (V.EvKey (V.KChar 'f') [])) = continue $ shoot g
+handleEvent g (VtyEvent (V.EvKey (V.KChar ' ') [])) = continue $ shoot g
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'p') [])) = continue $ pause g
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'r') [])) = continue $ restart g
 handleEvent g _                                     = continue g
@@ -48,13 +48,14 @@ pause :: Game -> Game
 pause g = g {paused = not $paused g}
 
 restart :: Game -> Game
-restart _ = game
+restart _ = game $levels!!0
 
 shoot :: Game -> Game
-shoot g = if stopped g then g
+shoot g = if stopped g || length s >= lShots l then g
   else g {shots = n:s }
     where s = shots g
           n = fmap (\(V2 x y)  -> V2 x (y + 1)) canon g 
+          l = level g
 
 move :: (Int -> Int) -> Game -> Game
 move f g = if stopped g then g
@@ -64,21 +65,31 @@ move f g = if stopped g then g
 step :: Game -> Game
 step g = if stopped g then g
   else do 
-      let s = map (\v -> (V2 (v ^._x) (v ^._y + 1))) $shots g --move shots
-      let a = killAliens $hitAliens s $moveAliens g
-      g { aliens = a, shots = [x | x <- s, not $(x ^._y) > height], count = nextCount $count g }
+      let movedShots = map (\v -> (V2 (v ^._x) (v ^._y + 1))) $shots g -- move shots
+      let a = handleAliens g movedShots
+      let s = handleShots g movedShots
+      let gUpd = g {aliens = a, shots = s, count = nextCount g }
+      levelUp gUpd
 
-moveAliens :: Game -> [Alien]
-moveAliens g = if count g < 10 then aliens g
-    else map (\(Alien c h) -> Alien (V2 (c ^._x) (c ^._y - 1)) h) $aliens g
+levelUp :: Game -> Game
+levelUp g = if not (null $aliens g) then g
+            else if length levels > n then game $levels!!n
+            else g {paused = True}
+            where n = lNext $level g
 
-killAliens :: [Alien] -> [Alien]
-killAliens a = [x | x <- a, not (0 == hits x)]
+handleAliens :: Game -> [Coord] -> [Alien]
+handleAliens g s = do
+      let a = map (\(Alien c h) -> if c `elem` s then Alien c (h -1) else Alien c h) $aliens g -- check for hits
+      let a1 = [x | x <- a, not (0 == hits x)] -- remove dead aliens 
+      if count g > 0 then a1
+      else map (\(Alien c h) -> Alien (V2 (c ^._x) (c ^._y - 1)) h) a1
 
-hitAliens :: [Coord] -> [Alien] -> [Alien]
-hitAliens s a = map (\(Alien c h) -> if c `elem` s then Alien c (h -1) else Alien c h) a
+handleShots :: Game ->  [Coord] -> [Coord]
+handleShots g s =  do
+      let s1 = [x | x <- s, not (x `elem` alientLocations g)] -- remove shots which hit
+      [x | x <- s1, not $(x ^._y) > height] -- remove shots which are out
 
-nextCount :: Int -> Int
-nextCount c = case c < 10 of
-          True  -> c + 1
+nextCount :: Game -> Int
+nextCount g = case count g < lSpeed (level g) of
+          True  -> count g + 1
           False -> 0
