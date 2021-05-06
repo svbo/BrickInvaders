@@ -37,7 +37,7 @@ drawInfo = withBorderStyle BS.unicodeBold
   $ B.borderWithLabel (str " Info ")
   $ C.hCenter
   $ padAll 1
-  $ str "Fire : f" <=> str "Pause: p"
+  $ str "Fire:    f" <=> str "Pause:   p" <=> str "Restart: r"
 
 drawGameOver :: Bool -> Widget Name
 drawGameOver o = if o
@@ -55,10 +55,10 @@ drawGrid g = withBorderStyle BS.unicodeBold
 
 cellAt :: Game -> Coord -> Cell
 cellAt g c
-      | c == canon g        = CanonCell
-      | c `elem` shots g    = ShotCell
-      | c `elem` aliens g   = AlienCell
-      | otherwise           = EmptyCell
+      | c == canon g               = CanonCell
+      | c `elem` shots g           = ShotCell
+      | c `elem` alientLocations g = AlienCell
+      | otherwise                  = EmptyCell
 
 drawCell :: Cell -> Widget Name
 drawCell CanonCell = withAttr canonAttr $str "⥎"
