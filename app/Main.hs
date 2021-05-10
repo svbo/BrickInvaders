@@ -67,8 +67,9 @@ step g = if stopped g then g
   else do 
       let movedShots = map (\v -> (V2 (v ^._x) (v ^._y + 1))) $shots g -- move shots
       let a = handleAliens g movedShots
+      let b = handleBlocker g movedShots
       let s = handleShots g movedShots
-      let gUpd = g {aliens = a, shots = s, count = nextCount g }
+      let gUpd = g {aliens = a, shots = s, count = nextCount g, blockers = b }
       levelUp gUpd
 
 levelUp :: Game -> Game
@@ -84,9 +85,12 @@ handleAliens g s = do
       if count g > 0 then a1
       else map (\(Alien c h) -> Alien (V2 (c ^._x) (c ^._y - 1)) h) a1
 
+handleBlocker :: Game -> [Coord] -> [Coord]
+handleBlocker g s = [x | x <- blockers g, not (x `elem` s)] -- remove blockers which hit
+
 handleShots :: Game ->  [Coord] -> [Coord]
 handleShots g s =  do
-      let s1 = [x | x <- s, not (x `elem` alientLocations g)] -- remove shots which hit
+      let s1 = [x | x <- s, not (x `elem` alientLocations g || x `elem` blockers g)] -- remove shots which hit
       [x | x <- s1, not $(x ^._y) > height] -- remove shots which are out
 
 nextCount :: Game -> Int
