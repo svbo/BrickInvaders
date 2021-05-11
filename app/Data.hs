@@ -64,22 +64,6 @@ getBlockers x = b1 ++ b2
   where b1 = [Blocker (V2 (x+i) 2) 3| i <- [0..5]]
         b2 = [Blocker (V2 (x+1+i) 3) 3| i <- [0..3]]
 
-levels :: [Level]
-levels = [Level 
-          { lNext   = 1
-          , lAliens = createAliens 10 5 2 14 1 
-          , lSpeed  = 10
-          , lAShotSpeed = 40
-          , lShots  = 1
-          },
-          Level 
-          { lNext   = 2
-          , lAliens = createAliens 10 5 2 14 1 ++ createAliens 11 5 2 13 1
-          , lSpeed  = 9
-          , lAShotSpeed = 30
-          , lShots  = 1
-          } ]
-
 --FromX -> nrOf -> offset -> Y -> hits
 createAliens:: Int -> Int -> Int -> Int -> Int -> [Alien]
 createAliens f n o y h = [Alien (V2 (f+x*o) y) h | x <- [0..n]]
@@ -105,3 +89,41 @@ allBlockerLocations g = map bCoord $blockers g
 
 stopped :: Game -> Bool
 stopped g = paused g || over g
+
+--Defined Levels
+levels :: [Level]
+levels = [Level 
+          { lNext   = 1
+          , lAliens = createAliens 10 5 2 14 1 
+          , lSpeed  = 10
+          , lAShotSpeed = 40
+          , lShots  = 1
+          },
+          Level 
+          { lNext   = 2
+          , lAliens = createAliens 10 5 2 14 1 ++ createAliens 11 5 2 13 1
+          , lSpeed  = 9
+          , lAShotSpeed = 30
+          , lShots  = 1
+          },
+          Level 
+          { lNext   = 3
+          , lAliens = createAliens 10 6 2 14 1 ++ createAliens 11 6 2 13 1
+          , lSpeed  = 8
+          , lAShotSpeed = 25
+          , lShots  = 1
+          },
+          Level 
+          { lNext   = 4
+          , lAliens = createAliens 10 7 2 14 1 ++ createAliens 11 7 2 13 1
+          , lSpeed  = 8
+          , lAShotSpeed = 20
+          , lShots  = 1
+          },
+          Level 
+          { lNext   = 5
+          , lAliens = createAliens 10 5 2 14 1 ++ createAliens 11 5 2 13 1 ++ createAliens 10 5 2 12 1
+          , lSpeed  = 7
+          , lAShotSpeed = 20
+          , lShots  = 1
+          } ]
