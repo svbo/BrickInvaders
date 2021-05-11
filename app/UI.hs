@@ -62,11 +62,11 @@ cellAt g c
       | otherwise                  = EmptyCell
 
 drawCell :: Cell -> Widget Name
-drawCell CanonCell   = withAttr canonAttr $str "⥎"
-drawCell ShotCell    = withAttr shotAttr $str "ᐞ"
-drawCell AlienCell   = withAttr alienAttr $str "⛯"
-drawCell BlockerCell = withAttr blockerAttr $str " "
-drawCell EmptyCell   = withAttr emptyAttr $str " "
+drawCell CanonCell   = withAttr canonAttr $str "▄▲▄" <=> str "▀▀▀"
+drawCell ShotCell    = withAttr shotAttr $str " ▲ " <=> str " ║ "
+drawCell AlienCell   = withAttr alienAttr $str "@§@" <=> str "/\"\\"
+drawCell BlockerCell = withAttr blockerAttr $str "   " <=> str "   "
+drawCell EmptyCell   = withAttr emptyAttr $str "   " <=> str "   "
 
 attributeMap :: AttrMap
 attributeMap = attrMap V.defAttr

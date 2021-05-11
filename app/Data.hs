@@ -40,24 +40,24 @@ game l = Game
         , level     = l
         , aliens    = lAliens l
         , count     = 1
-        , blockers  = getBlockers 5 ++ getBlockers 20 ++ getBlockers 35
+        , blockers  = getBlockers 5 ++ getBlockers 15 ++ getBlockers 25
         }
 
 -- Int == x start value of a single bocker
 getBlockers ::Int -> [Coord]
 getBlockers x = b1
-  where b1 = [V2 (x+i) 2| i <- [0..10]]
+  where b1 = [V2 (x+i) 2| i <- [0..5]]
 
 levels :: [Level]
 levels = [Level 
           { lNext   = 1
-          , lAliens = createAliens 10 5 2 19 1
+          , lAliens = createAliens 10 5 2 14 1
           , lSpeed  = 20
           , lShots  = 1
           },
           Level 
           { lNext   = 2
-          , lAliens = createAliens 10 5 2 19 1 ++ createAliens 11 5 2 18 1
+          , lAliens = createAliens 10 5 2 14 1 ++ createAliens 11 5 2 13 1
           , lSpeed  = 19
           , lShots  = 1
           } ]
@@ -66,14 +66,15 @@ levels = [Level
 createAliens:: Int -> Int -> Int -> Int -> Int -> [Alien]
 createAliens f n o y h = [Alien (V2 (f+x*o) y) h | x <- [0..n]]
 
+
 initGame :: IO Game
 initGame = do
   let l = levels!!0
   return $game l
 
 height, width :: Int
-height = 20
-width = 50
+height = 15
+width = 35
 
 alientLocations::Game -> [Coord]
 alientLocations g = map coord a
