@@ -59,7 +59,9 @@ cellAt g c
       | c `elem` shots g           = ShotCell
       | c `elem` alienShots g      = AlienShotCell
       | c `elem` alientLocations g = AlienCell
-      | c `elem` blockers g        = BlockerCell
+      | c `elem` blockerLocations g 3 = BlockerCell0
+      | c `elem` blockerLocations g 2 = BlockerCell1
+      | c `elem` blockerLocations g 1 = BlockerCell2
       | otherwise                  = EmptyCell
 
 drawCell :: Cell -> Widget Name
@@ -67,7 +69,9 @@ drawCell CanonCell      = withAttr canonAttr $str "▄▲▄" <=> str "▀▀▀
 drawCell ShotCell       = withAttr shotAttr $str " ▲ " <=> str " ║ "
 drawCell AlienShotCell  = withAttr alienShotAttr $str " ↡ " <=> str " ▼ "
 drawCell AlienCell      = withAttr alienAttr $str "@§@" <=> str "/\"\\"
-drawCell BlockerCell    = withAttr blockerAttr $str "   " <=> str "   "
+drawCell BlockerCell0 = withAttr blockerAttr $str "   " <=> str "   "
+drawCell BlockerCell1 = withAttr blockerAttr $str " ▀ " <=> str "  ▄"
+drawCell BlockerCell2 = withAttr blockerAttr $str "▄▀ " <=> str "▄▀▄"
 drawCell EmptyCell      = withAttr emptyAttr $str "   " <=> str "   "
 
 attributeMap :: AttrMap
@@ -77,7 +81,7 @@ attributeMap = attrMap V.defAttr
     (alienShotAttr, fg V.white `V.withStyle` V.bold),
     (alienAttr, fg V.green `V.withStyle` V.bold),
     (gameOverAttr, fg V.red `V.withStyle` V.bold),
-    (blockerAttr, V.green `on` V.green)
+    (blockerAttr, V.black `on` V.white)
   ]
 
 canonAttr, shotAttr, emptyAttr, gameOverAttr, alienAttr, blockerAttr, alienShotAttr :: AttrName
