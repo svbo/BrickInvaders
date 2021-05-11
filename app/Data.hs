@@ -6,13 +6,14 @@ type Name = ()
 type Coord = V2 Int
 
 data Tick = Tick
-data Cell = CanonCell | EmptyCell | ShotCell | AlienCell | BlockerCell
+data Cell = CanonCell | EmptyCell | ShotCell | AlienCell | BlockerCell | AlienShotCell
 data Direction = L | R | D deriving Show
 
 data Level = Level
   { lNext   :: Int
   , lAliens :: [Alien]
   , lSpeed  :: Int
+  , lAShotSpeed :: Int
   , lShots  :: Int
   } deriving (Show)
 
@@ -27,8 +28,10 @@ data Game = Game
   , over      :: Bool
   , level     :: Level 
   , shots     :: [Coord]
+  , alienShots:: [Coord]
   , aliens    :: [Alien]
   , count     :: Int
+  , aShotCount:: Int 
   , blockers  :: [Coord]
   , alienDir  :: Direction
   } deriving (Show)
@@ -38,10 +41,12 @@ game l = Game
         { canon     = V2 10 0
         , paused    = False
         , shots     = []
+        , alienShots= []
         , over      = False
         , level     = l
         , aliens    = lAliens l
         , count     = 1
+        , aShotCount= 1
         , blockers  = getBlockers 5 ++ getBlockers 15 ++ getBlockers 25
         , alienDir  = R
         }
@@ -56,12 +61,14 @@ levels = [Level
           { lNext   = 1
           , lAliens = createAliens 10 5 2 14 1 
           , lSpeed  = 10
+          , lAShotSpeed = 40
           , lShots  = 1
           },
           Level 
           { lNext   = 2
           , lAliens = createAliens 10 5 2 14 1 ++ createAliens 11 5 2 13 1
           , lSpeed  = 9
+          , lAShotSpeed = 30
           , lShots  = 1
           } ]
 

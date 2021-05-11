@@ -66,11 +66,13 @@ step :: Game -> Game
 step g = if stopped g then g
   else do 
       let movedShots = map (\v -> (V2 (v ^._x) (v ^._y + 1))) $shots g -- move shots
+      let movedAlienShots = map (\v -> (V2 (v ^._x) (v ^._y - 1))) $alienShots g -- move Alien shots
       let a = handleAliens g movedShots
-      let b = handleBlocker g movedShots
+      let b = handleBlocker g movedShots movedAlienShots
       let s = handleShots g movedShots
+      let as = handleAlienShots g movedAlienShots
       let d = handleDirection g a
-      let gUpd = g {aliens = a, shots = s, count = nextCount g, blockers = b, alienDir = d}
+      let gUpd = g {aliens = a, shots = s, alienShots = as, count = nextCount g, aShotCount = nextAShotCount g, blockers = b, alienDir = d}
       levelUp gUpd
 
 levelUp :: Game -> Game
@@ -91,13 +93,21 @@ moveAlien R (Alien c h) = Alien (V2 (c ^._x+1) (c ^._y )) h
 moveAlien L (Alien c h) = Alien (V2 (c ^._x-1) (c ^._y )) h
 moveAlien D (Alien c h) = Alien (V2 (c ^._x) (c ^._y-1)) h
 
-handleBlocker :: Game -> [Coord] -> [Coord]
-handleBlocker g s = [x | x <- blockers g, not (x `elem` s)] -- remove blockers which hit
+handleBlocker :: Game -> [Coord] -> [Coord] -> [Coord]
+handleBlocker g s as = [x | x <- blockers g, not (x `elem` s) && not (x `elem` as)] -- remove blockers which hit
 
 handleShots :: Game ->  [Coord] -> [Coord]
 handleShots g s =  do
       let s1 = [x | x <- s, not (x `elem` alientLocations g || x `elem` blockers g)] -- remove shots which hit
       [x | x <- s1, not $(x ^._y) > height] -- remove shots which are out
+
+handleAlienShots :: Game ->  [Coord] -> [Coord]
+handleAlienShots g s =  do
+      let s1 = [x | x <- s, not (x == canon g || x `elem` blockers g)] -- remove shots which hit
+      let s2 = [x | x <- s1, not $(x ^._y) < 0] -- remove shots which are out
+      if aShotCount g > 0 then s2
+      else s2 ++ [fmap (\(V2 x y)  -> V2 x (y - 1)) coord ((aliens g) !! ((length (aliens g)) `div`2) )] --add new shot
+
 
 handleDirection :: Game -> [Alien] -> Direction
 handleDirection g a = if count g > 0 then alienDir g
@@ -112,4 +122,9 @@ handleDirection g a = if count g > 0 then alienDir g
 nextCount :: Game -> Int
 nextCount g = case count g < lSpeed (level g) of
           True  -> count g + 1
+          False -> 0
+
+nextAShotCount :: Game -> Int
+nextAShotCount g = case aShotCount g < lAShotSpeed (level g) of
+          True  -> aShotCount g + 1
           False -> 0

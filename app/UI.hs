@@ -57,29 +57,33 @@ cellAt :: Game -> Coord -> Cell
 cellAt g c
       | c == canon g               = CanonCell
       | c `elem` shots g           = ShotCell
+      | c `elem` alienShots g      = AlienShotCell
       | c `elem` alientLocations g = AlienCell
       | c `elem` blockers g        = BlockerCell
       | otherwise                  = EmptyCell
 
 drawCell :: Cell -> Widget Name
-drawCell CanonCell   = withAttr canonAttr $str "▄▲▄" <=> str "▀▀▀"
-drawCell ShotCell    = withAttr shotAttr $str " ▲ " <=> str " ║ "
-drawCell AlienCell   = withAttr alienAttr $str "@§@" <=> str "/\"\\"
-drawCell BlockerCell = withAttr blockerAttr $str "   " <=> str "   "
-drawCell EmptyCell   = withAttr emptyAttr $str "   " <=> str "   "
+drawCell CanonCell      = withAttr canonAttr $str "▄▲▄" <=> str "▀▀▀"
+drawCell ShotCell       = withAttr shotAttr $str " ▲ " <=> str " ║ "
+drawCell AlienShotCell  = withAttr alienShotAttr $str " ↡ " <=> str " ▼ "
+drawCell AlienCell      = withAttr alienAttr $str "@§@" <=> str "/\"\\"
+drawCell BlockerCell    = withAttr blockerAttr $str "   " <=> str "   "
+drawCell EmptyCell      = withAttr emptyAttr $str "   " <=> str "   "
 
 attributeMap :: AttrMap
 attributeMap = attrMap V.defAttr
   [ (canonAttr, fg V.blue `V.withStyle` V.bold),
     (shotAttr, fg V.red `V.withStyle` V.bold),
+    (alienShotAttr, fg V.white `V.withStyle` V.bold),
     (alienAttr, fg V.green `V.withStyle` V.bold),
     (gameOverAttr, fg V.red `V.withStyle` V.bold),
     (blockerAttr, V.green `on` V.green)
   ]
 
-canonAttr, shotAttr, emptyAttr, gameOverAttr, alienAttr, blockerAttr :: AttrName
+canonAttr, shotAttr, emptyAttr, gameOverAttr, alienAttr, blockerAttr, alienShotAttr :: AttrName
 canonAttr = "canonAttr"
 shotAttr  = "shotAttr"
+alienShotAttr = "alienShotAttr"
 emptyAttr = "emptyAttr"
 alienAttr = "alienAttr"
 blockerAttr = "blockerAttr"
