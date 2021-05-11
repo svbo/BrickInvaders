@@ -7,6 +7,7 @@ type Coord = V2 Int
 
 data Tick = Tick
 data Cell = CanonCell | EmptyCell | ShotCell | AlienCell | BlockerCell
+data Direction = L | R | D deriving Show
 
 data Level = Level
   { lNext   :: Int
@@ -29,6 +30,7 @@ data Game = Game
   , aliens    :: [Alien]
   , count     :: Int
   , blockers  :: [Coord]
+  , alienDir  :: Direction
   } deriving (Show)
 
 game ::Level ->  Game 
@@ -41,6 +43,7 @@ game l = Game
         , aliens    = lAliens l
         , count     = 1
         , blockers  = getBlockers 5 ++ getBlockers 15 ++ getBlockers 25
+        , alienDir  = R
         }
 
 -- Int == x start value of a single bocker
@@ -51,14 +54,14 @@ getBlockers x = b1
 levels :: [Level]
 levels = [Level 
           { lNext   = 1
-          , lAliens = createAliens 10 5 2 14 1
-          , lSpeed  = 20
+          , lAliens = createAliens 10 5 2 14 1 
+          , lSpeed  = 10
           , lShots  = 1
           },
           Level 
           { lNext   = 2
           , lAliens = createAliens 10 5 2 14 1 ++ createAliens 11 5 2 13 1
-          , lSpeed  = 19
+          , lSpeed  = 9
           , lShots  = 1
           } ]
 

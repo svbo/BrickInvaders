@@ -69,7 +69,8 @@ step g = if stopped g then g
       let a = handleAliens g movedShots
       let b = handleBlocker g movedShots
       let s = handleShots g movedShots
-      let gUpd = g {aliens = a, shots = s, count = nextCount g, blockers = b }
+      let d = handleDirection g a
+      let gUpd = g {aliens = a, shots = s, count = nextCount g, blockers = b, alienDir = d}
       levelUp gUpd
 
 levelUp :: Game -> Game
@@ -83,7 +84,12 @@ handleAliens g s = do
       let a = map (\(Alien c h) -> if c `elem` s then Alien c (h -1) else Alien c h) $aliens g -- check for hits
       let a1 = [x | x <- a, not (0 == hits x)] -- remove dead aliens 
       if count g > 0 then a1
-      else map (\(Alien c h) -> Alien (V2 (c ^._x) (c ^._y - 1)) h) a1
+      else map (moveAlien (alienDir g)) a1
+
+moveAlien :: Direction -> Alien -> Alien
+moveAlien R (Alien c h) = Alien (V2 (c ^._x+1) (c ^._y )) h
+moveAlien L (Alien c h) = Alien (V2 (c ^._x-1) (c ^._y )) h
+moveAlien D (Alien c h) = Alien (V2 (c ^._x) (c ^._y-1)) h
 
 handleBlocker :: Game -> [Coord] -> [Coord]
 handleBlocker g s = [x | x <- blockers g, not (x `elem` s)] -- remove blockers which hit
@@ -92,6 +98,16 @@ handleShots :: Game ->  [Coord] -> [Coord]
 handleShots g s =  do
       let s1 = [x | x <- s, not (x `elem` alientLocations g || x `elem` blockers g)] -- remove shots which hit
       [x | x <- s1, not $(x ^._y) > height] -- remove shots which are out
+
+handleDirection :: Game -> [Alien] -> Direction
+handleDirection g a = if count g > 0 then alienDir g
+  else do
+    let isLeft = any (\(Alien c _) -> c ^._x <= 5) a
+    let isRight = any (\(Alien c _) -> c ^._x >= width-5) a
+    case alienDir g of
+      D -> if isLeft then R else L
+      L -> if isLeft then D else L
+      R -> if isRight then D else R
 
 nextCount :: Game -> Int
 nextCount g = case count g < lSpeed (level g) of
