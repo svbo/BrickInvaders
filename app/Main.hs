@@ -70,9 +70,10 @@ step g = if stopped g then g
       let a = handleAliens g movedShots
       let b = handleBlocker g movedShots movedAlienShots
       let s = handleShots g movedShots
+      let l = handleLives g movedAlienShots
       let as = handleAlienShots g movedAlienShots
       let d = handleDirection g a
-      let gUpd = g {aliens = a, shots = s, alienShots = as, count = nextCount g, aShotCount = nextAShotCount g, blockers = b, alienDir = d}
+      let gUpd = g {aliens = a, shots = s, alienShots = as, count = nextCount g, aShotCount = nextAShotCount g, blockers = b, alienDir = d, lives = l, over = l == 0}
       levelUp gUpd
 
 levelUp :: Game -> Game
@@ -112,7 +113,6 @@ handleAlienShots g s =  do
       if aShotCount g > 0 then s2
       else s2 ++ [fmap (\(V2 x y)  -> V2 x (y - 1)) coord (aliens g !! (length (aliens g) `div`2) )] --add new shot
 
-
 handleDirection :: Game -> [Alien] -> Direction
 handleDirection g a = if count g > 0 then alienDir g
   else do
@@ -122,6 +122,12 @@ handleDirection g a = if count g > 0 then alienDir g
       D -> if isLeft then R else L
       L -> if isLeft then D else L
       R -> if isRight then D else R
+
+handleLives:: Game -> [Coord] -> Int
+handleLives g as = case h of
+            [] -> lives g
+            _ -> lives g - 1
+            where h = [x | x <- as, x == canon g]
 
 nextCount :: Game -> Int
 nextCount g = if count g < lSpeed (level g) then count g + 1 else 0

@@ -33,6 +33,7 @@ data Game = Game
   { canon     :: Coord
   , paused    :: Bool
   , over      :: Bool
+  , lives     :: Int
   , level     :: Level 
   , shots     :: [Coord]
   , alienShots:: [Coord]
@@ -50,6 +51,7 @@ game l = Game
         , shots     = []
         , alienShots= []
         , over      = False
+        , lives     = 3
         , level     = l
         , aliens    = lAliens l
         , count     = 1
