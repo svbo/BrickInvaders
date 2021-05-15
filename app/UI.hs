@@ -21,37 +21,23 @@ drawUI g = [ C.center $ padRight (Pad 2) (drawStats g) <+> drawGrid g ]
 drawStats :: Game -> Widget Name
 drawStats g = hLimit 18
   $ vBox [ drawGameOver $over g
-         , drawLives (lives g) (over g)
-         , drawLevel $lNext $level g
-         , drawInfo
+         , drawInfoBox " Stats " $labledValue "Lives: " (show $lives g) <=> labledValue "Score: " (show $score g) <=> labledValue "Level: " (show $lNext $level g)
+         , drawInfoBox " Info "  $str "Fire:    space" <=> str "Pause:   p    " <=> str "Restart: r    "
          ]
 
-drawLevel :: Int -> Widget Name
-drawLevel n = withBorderStyle BS.unicodeBold
-  $ B.borderWithLabel (str " Level ")
-  $ C.hCenter
-  $ padAll 1
-  $ str $ show n
+labledValue :: String -> String -> Widget Name
+labledValue l v = str l <+> str v
 
-drawLives :: Int -> Bool -> Widget Name
-drawLives n o = if o then emptyWidget else
-  withBorderStyle BS.unicodeBold
-  $ B.borderWithLabel (str " Lives ")
+drawInfoBox :: String -> Widget Name -> Widget Name
+drawInfoBox l w = withBorderStyle BS.unicodeBold
+  $ B.borderWithLabel (str l)
   $ C.hCenter
   $ padAll 1
-  $ str $ show n
+  w
 
 drawGameOver :: Bool -> Widget Name
-drawGameOver o = if o
-     then withAttr gameOverAttr $ padTop (Pad 2) $ padBottom (Pad 2) $ C.hCenter $ str "GAME OVER"
-     else emptyWidget
-
-drawInfo :: Widget Name
-drawInfo = withBorderStyle BS.unicodeBold
-  $ B.borderWithLabel (str " Info ")
-  $ C.hCenter
-  $ padAll 1
-  $ str "Fire:    space" <=> str "Pause:   p    " <=> str "Restart: r    "
+drawGameOver False = emptyWidget
+drawGameOver True  = withAttr gameOverAttr $ padTop (Pad 2) $ padBottom (Pad 2) $ C.hCenter $ str "GAME OVER"
 
 drawGrid :: Game -> Widget Name
 drawGrid g = withBorderStyle BS.unicodeBold

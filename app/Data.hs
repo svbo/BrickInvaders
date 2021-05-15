@@ -42,10 +42,11 @@ data Game = Game
   , aShotCount:: Int 
   , blockers  :: [Blocker]
   , alienDir  :: Direction
+  , score     :: Int
   } deriving (Show)
 
-game ::Level ->  Game 
-game l = Game
+game ::Int -> Level ->  Game 
+game s l = Game
         { canon     = V2 10 0
         , paused    = False
         , shots     = []
@@ -58,6 +59,7 @@ game l = Game
         , aShotCount= 1
         , blockers  = getBlockers 5 ++ getBlockers 15 ++ getBlockers 25
         , alienDir  = R
+        , score     = s
         }
 
 -- Int == x start value of a single bocker
@@ -73,7 +75,7 @@ createAliens f n o y h = [Alien (V2 (f+x*o) y) h | x <- [0..n]]
 initGame :: IO Game
 initGame = do
   let l = head levels
-  return $game l
+  return $game 0 l
 
 height, width :: Int
 height = 15

@@ -48,7 +48,7 @@ pause :: Game -> Game
 pause g = g {paused = not $paused g}
 
 restart :: Game -> Game
-restart _ = game $head levels
+restart _ = game 0 $head levels
 
 shoot :: Game -> Game
 shoot g = if stopped g || length s >= lShots l then g
@@ -73,13 +73,14 @@ step g = if stopped g then g
       let l = handleLives g movedAlienShots
       let as = handleAlienShots g movedAlienShots
       let d = handleDirection g a
-      let gUpd = g {aliens = a, shots = s, alienShots = as, count = nextCount g, aShotCount = nextAShotCount g, blockers = b, alienDir = d, lives = l, over = l == 0}
+      let sc = handleScore g movedShots
+      let gUpd = g {aliens = a, shots = s, alienShots = as, count = nextCount g, aShotCount = nextAShotCount g, blockers = b, alienDir = d, score = sc ,lives = l, over = l == 0}
       levelUp gUpd
 
 levelUp :: Game -> Game
 levelUp g
   | not (null $aliens g) = g
-  | length levels > n = game $ levels !! n
+  | length levels > n = game (score g) (levels!!n)
   | otherwise = g {paused = True}
   where
       n = lNext $level g
@@ -100,6 +101,10 @@ handleBlocker :: Game -> [Coord] -> [Coord] -> [Blocker]
 handleBlocker g s as = do
       let b1 = map (\(Blocker c h) -> if c `elem` s || c `elem` as then Blocker c (h -1) else Blocker c h) $blockers g -- check for hits
       [x |x <- b1, bHealth x /= 0] -- remove blockers which hit
+
+handleScore :: Game -> [Coord] -> Int
+handleScore g s = score g + length h
+      where h = [x | x <- s, x `elem` alientLocations g] 
 
 handleShots :: Game ->  [Coord] -> [Coord]
 handleShots g s =  do
