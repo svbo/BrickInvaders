@@ -73,8 +73,11 @@ step g = if stopped g then g
       let l = handleLives g movedAlienShots
       let as = handleAlienShots g movedAlienShots
       let d = handleDirection g a
+      let u = handleUfo g movedShots
       let sc = handleScore g movedShots
-      let gUpd = g {aliens = a, shots = s, alienShots = as, count = nextCount g, aShotCount = nextAShotCount g, blockers = b, alienDir = d, score = sc ,lives = l, over = l == 0}
+      let gUpd = g {aliens = a, ufo = u, shots = s, alienShots = as, 
+            count = nextCount g, aShotCount = nextAShotCount g, ufoCount = nextUfoCount g, 
+            blockers = b, alienDir = d, score = sc ,lives = l, over = l == 0}
       levelUp gUpd
 
 levelUp :: Game -> Game
@@ -103,12 +106,13 @@ handleBlocker g s as = do
       [x |x <- b1, bHealth x /= 0] -- remove blockers which hit
 
 handleScore :: Game -> [Coord] -> Int
-handleScore g s = score g + length h
-      where h = [x | x <- s, x `elem` alientLocations g] 
+handleScore g s = score g + length h + length u * 10
+      where h = [x | x <- s, x `elem` alientLocations g]
+            u = [x | x <- s, x `elem` ufoLocations g]
 
 handleShots :: Game ->  [Coord] -> [Coord]
 handleShots g s =  do
-      let s1 = [x | x <- s, not (x `elem` alientLocations g || x `elem` allBlockerLocations g)] -- remove shots which hit
+      let s1 = [x | x <- s, not (x `elem` alientLocations g || x `elem` allBlockerLocations g || x `elem` ufoLocations g)] -- remove shots which hit
       [x | x <- s1, x ^._y <= height] -- remove shots which are out
 
 handleAlienShots :: Game ->  [Coord] -> [Coord]
@@ -128,6 +132,15 @@ handleDirection g a = if count g > 0 then alienDir g
       L -> if isLeft then D else L
       R -> if isRight then D else R
 
+handleUfo :: Game ->  [Coord] -> [Ufo]
+handleUfo g s = do
+      let a = map (\(Ufo c h) -> if c `elem` s then Ufo c (h -1) else Ufo c h) $ufo g -- check for hits
+      let a1 = [x | x <- a, 0 /= uHits x && width > (uCoord x) ^._x] -- remove dead and outside ufo 
+      if alienDir g == D && ufo g == [] then a1 ++ createUfo -- new ufo when aliens go down and no ufo present
+      else if ufoCount g > 0 then a1
+      else map (\(Ufo c h) -> Ufo (V2 (c ^._x+1) (c ^._y )) h) a1
+      
+
 handleLives:: Game -> [Coord] -> Int
 handleLives g as = case h of
             [] -> lives g
@@ -139,3 +152,6 @@ nextCount g = if count g < lSpeed (level g) then count g + 1 else 0
 
 nextAShotCount :: Game -> Int
 nextAShotCount g = if aShotCount g < lAShotSpeed (level g) then aShotCount g + 1 else 0
+
+nextUfoCount :: Game -> Int
+nextUfoCount g = if ufoCount g < lUfoSpeed (level g) then ufoCount g + 1 else 0
