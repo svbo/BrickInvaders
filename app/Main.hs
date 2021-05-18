@@ -143,10 +143,11 @@ handleUfo g s = do
       
 
 handleLives:: Game -> [Coord] -> Int
-handleLives g as = case h of
-            [] -> lives g
-            _ -> lives g - 1
-            where h = [x | x <- as, x == canon g]
+handleLives g as = if a then 0
+      else if h == [] then lives g
+      else lives g - 1
+            where h = [x | x <- as, x == canon g] --canon is hit
+                  a = any (\c -> c ^._y <= 1) (alientLocations g) --game over when aliens at bottom
 
 nextCount :: Game -> Int
 nextCount g = if count g < lSpeed (level g) then count g + 1 else 0
