@@ -103,7 +103,8 @@ moveAlien D (Alien c h) = Alien (V2 (c ^._x) (c ^._y-1)) h
 handleBlocker :: Game -> [Coord] -> [Coord] -> [Blocker]
 handleBlocker g s as = do
       let b1 = map (\(Blocker c h) -> if c `elem` s || c `elem` as then Blocker c (h -1) else Blocker c h) $blockers g -- check for hits
-      [x |x <- b1, bHealth x /= 0] -- remove blockers which hit
+      let b2 = map (\(Blocker c h) -> if c `elem` alientLocations g then Blocker c 0 else Blocker c h) b1 --check for aliens
+      [x |x <- b2, bHealth x /= 0] -- remove blockers which hit
 
 handleScore :: Game -> [Coord] -> Int
 handleScore g s = score g + length h + length u * 10
