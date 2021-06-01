@@ -53,6 +53,7 @@ data Game = Game
   , score     :: Int
   } deriving (Show)
 
+-- | Initialize the game with the default values
 game ::Int -> Level ->  Game 
 game s l = Game
         { canon     = V2 10 0
@@ -72,45 +73,58 @@ game s l = Game
         , score     = s
         }
 
--- Int == x start value of a single bocker
+-- | Returns a group of blockers at the given start X-Pos
+-- x: start X-Pos of a single bocker
 getBlockers ::Int -> [Blocker]
 getBlockers x = b1 ++ b2
   where b1 = [Blocker (V2 (x+i) 2) 3| i <- [0..5]]
         b2 = [Blocker (V2 (x+1+i) 3) 3| i <- [0..3]]
 
---FromX -> nrOf -> offset -> Y -> hits
+-- | Returns a group of aliens 
+-- f: X-Pos of first alien 
+-- n: amount of aliens 
+-- o: Offset the aliens have to their left neighbor 
+-- y: Y-Pos of the alien group
+-- h: Amount of hits it takes to kill the alien
 createAliens:: Int -> Int -> Int -> Int -> Int -> [Alien]
 createAliens f n o y h = [Alien (V2 (f+x*o) y) h | x <- [0..n]]
 
+-- | Returns an ufo
 createUfo:: [Ufo]
 createUfo = [Ufo (V2 0 height-1) 1]
 
+-- | Starts the game with the first level
 initGame :: IO Game
 initGame = do
   let l = head levels
   return $game 0 l
 
+-- | Definition of the game canvas
 height, width :: Int
 height = 15
 width = 35
 
+-- | Return a list of all alien locations
 alientLocations::Game -> [Coord]
 alientLocations g = map coord $aliens g
 
+-- | Returns a list of all ufo locations
 ufoLocations :: Game -> [Coord]
 ufoLocations g = map uCoord $ufo g
 
---All blocker locations for blockers with given health 
+--- |Returns a List of all blocker locations with given health 
 blockerLocations::Game -> Int -> [Coord]
 blockerLocations g h = [bCoord x | x <- blockers g, bHealth x == h]
 
+-- |Returns a List of all blocker locations 
 allBlockerLocations::Game -> [Coord]
 allBlockerLocations g = map bCoord $blockers g
 
+-- | Returns if the game is paused or over
 stopped :: Game -> Bool
 stopped g = paused g || over g
 
---Defined Levels
+-- | Level definitions
 levels :: [Level]
 levels = [Level 
           { lNext   = 1

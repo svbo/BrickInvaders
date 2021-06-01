@@ -15,9 +15,11 @@ import Brick
   , hLimit, (<+>), Padding(..), (<=>)
   )
 
+-- | Draw the UI of the game
 drawUI :: Game -> [Widget Name]
 drawUI g = [ C.center $ padRight (Pad 2) (drawStats g) <+> drawGrid g ]
 
+-- | Draw the stats- and info-box at the left
 drawStats :: Game -> Widget Name
 drawStats g = hLimit 18
   $ vBox [ drawGameOver $over g
@@ -25,9 +27,11 @@ drawStats g = hLimit 18
          , drawInfoBox " Info "  $str "Fire:    space" <=> str "Pause:   p    " <=> str "Restart: r    "
          ]
 
+-- | Combine a label with a score
 labledValue :: String -> String -> Widget Name
 labledValue l v = str l <+> str v
 
+-- | Draw a info box with the passed contents
 drawInfoBox :: String -> Widget Name -> Widget Name
 drawInfoBox l w = withBorderStyle BS.unicodeBold
   $ B.borderWithLabel (str l)
@@ -35,10 +39,12 @@ drawInfoBox l w = withBorderStyle BS.unicodeBold
   $ padAll 1
   w
 
+-- | Draw the "GAME OVER" text
 drawGameOver :: Bool -> Widget Name
 drawGameOver False = emptyWidget
 drawGameOver True  = withAttr gameOverAttr $ padTop (Pad 2) $ padBottom (Pad 2) $ C.hCenter $ str "GAME OVER"
 
+-- | Draw the game border and each cell in it
 drawGrid :: Game -> Widget Name
 drawGrid g = withBorderStyle BS.unicodeBold
   $ B.borderWithLabel (str "Brick Invaders !!!")
@@ -48,6 +54,7 @@ drawGrid g = withBorderStyle BS.unicodeBold
     cellsInRow y = [drawCoord (V2 x y) | x <- [0..width-1]]
     drawCoord    = drawCell . cellAt g
 
+-- | Draw the diffrent cells at the coordinate of the canvas
 cellAt :: Game -> Coord -> Cell
 cellAt g c
       | c == canon g               = CanonCell
@@ -60,6 +67,7 @@ cellAt g c
       | c `elem` blockerLocations g 1 = BlockerCell2
       | otherwise                  = EmptyCell
 
+-- | Draw the game elemts as a 3x2 cell
 drawCell :: Cell -> Widget Name
 drawCell CanonCell      = withAttr canonAttr $str "▄▲▄" <=> str "▀▀▀"
 drawCell ShotCell       = withAttr shotAttr $str " ▲ " <=> str " ║ "
@@ -71,6 +79,7 @@ drawCell BlockerCell1 = withAttr blockerAttr $str " ▀ " <=> str "  ▄"
 drawCell BlockerCell2 = withAttr blockerAttr $str "▄▀ " <=> str "▄▀▄"
 drawCell EmptyCell      = withAttr emptyAttr $str "   " <=> str "   "
 
+-- | Set styling of attributes
 attributeMap :: AttrMap
 attributeMap = attrMap V.defAttr
   [ (canonAttr, fg V.blue `V.withStyle` V.bold),
@@ -82,6 +91,7 @@ attributeMap = attrMap V.defAttr
     (blockerAttr, V.black `on` V.white)
   ]
 
+-- | Attributes of game elements
 canonAttr, shotAttr, emptyAttr, gameOverAttr, alienAttr, ufoAttr, blockerAttr, alienShotAttr :: AttrName
 canonAttr = "canonAttr"
 shotAttr  = "shotAttr"
