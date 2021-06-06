@@ -10,7 +10,7 @@ pause g = g {paused = not $paused g}
 
 -- | Restart the game
 restart :: Game -> Game
-restart _ = game 0 $head levels
+restart _ = game 0 3 $head levels
 
 -- | Add new shot from the canon to the game
 shoot :: Game -> Game
@@ -31,7 +31,7 @@ move f g = if stopped g then g
 levelUp :: Game -> Game
 levelUp g
   | not (null $aliens g) = g
-  | length levels > n = game (score g) (levels!!n)
+  | length levels > n = game (score g) (lives g) (levels!!n)
   | otherwise = g {paused = True}
   where
       n = lNext $level g
@@ -39,10 +39,15 @@ levelUp g
 -- | Remove dead aliens and trigger alien movement
 handleAliens :: Game -> [Coord] -> [Alien]
 handleAliens g s = do
-      let a = map (\(Alien c h) -> if c `elem` s then Alien c (h -1) else Alien c h) $aliens g -- check for hits
-      let a1 = [x | x <- a, 0 /= hits x] -- remove dead aliens 
-      if count g > 0 then a1
-      else map (moveAlien (alienDir g)) a1
+      let a = moveAndKill (aliens g) s
+      if count g > 0 then a
+      else do
+            let a' = map (moveAlien (alienDir g)) a -- moove aliens
+            moveAndKill a' s -- check for hits again after mooving aliens
+      
+moveAndKill :: [Alien] -> [Coord] -> [Alien]
+moveAndKill a s = [x | x <- a', 0 /= hits x] -- remove dead aliens 
+      where a' = map (\(Alien c h) -> if c `elem` s then Alien c (h -1) else Alien c h) a  -- check for hits
 
 -- | Move aliens according to current direction
 moveAlien :: Direction -> Alien -> Alien

@@ -23,7 +23,7 @@ data Level = Level
 data Alien = Alien 
   { coord :: Coord
   , hits  :: Int
-  } deriving (Show)
+  } deriving (Show, Eq)
 
 data Ufo = Ufo 
   { uCoord :: Coord
@@ -54,14 +54,14 @@ data Game = Game
   } deriving (Show)
 
 -- | Initialize the game with the default values
-game ::Int -> Level ->  Game 
-game s l = Game
+game ::Int -> Int -> Level ->  Game 
+game s li l = Game
         { canon     = V2 10 0
         , paused    = False
         , shots     = []
         , alienShots= []
         , over      = False
-        , lives     = 3
+        , lives     = li
         , level     = l
         , aliens    = lAliens l
         , ufo       = []
@@ -97,7 +97,7 @@ createUfo = [Ufo (V2 0 height-1) 1]
 initGame :: IO Game
 initGame = do
   let l = head levels
-  return $game 0 l
+  return $game 0 3 l
 
 -- | Definition of the game canvas
 height, width :: Int
