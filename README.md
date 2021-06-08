@@ -31,7 +31,7 @@ $ cabal update
 $ cabal run brickinvaders
 ```
 # Game
-Kill all aliens before they reach the ground or before they kill you. Each alien-kill gives you one point, if you destroy the spaceship you get ten points.
+Kill all aliens before they reach the ground or before they kill you. Each alien-kill gives you one point, if you destroy the spaceship, you get ten points.
 
 # Controls
 - `space`  Shoot
@@ -43,7 +43,7 @@ Kill all aliens before they reach the ground or before they kill you. Each alien
 - Moving aliens that also shoot
 - Moving spaceship
 - Tank controlled by the player
-- Blockers which get dameged when shot
+- Blockers which get damaged when shot
 - Pause and restart the game
 - Player has multiple lives
 - Scoring system
@@ -52,11 +52,11 @@ Kill all aliens before they reach the ground or before they kill you. Each alien
     - alien speed
     - alien shoot speed
     - spaceship speed
-    - amount of shots it takes to kill an alien
+    - number of shots it takes to kill an alien
 
 
 # Testing
-The test are located in the `test` Folder.
+The tests are located in the `test` Folder.
 
 To run the Tests use:
 ```
