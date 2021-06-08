@@ -6,11 +6,14 @@ import Control.Lens ((^.))
 
 -- | Pause the game
 pause :: Game -> Game
-pause g = g {paused = not $paused g}
+pause g = case status g  of
+      Active -> g {status = Paused}
+      Paused -> g {status = Active}
+      _ -> g
 
 -- | Restart the game
 restart :: Game -> Game
-restart _ = game 0 3 $head levels
+restart _ = game 0 3 (generateLevel 0)
 
 -- | Add new shot from the canon to the game
 shoot :: Game -> Game
@@ -31,8 +34,8 @@ move f g = if stopped g then g
 levelUp :: Game -> Game
 levelUp g
   | not (null $aliens g) = g
-  | length levels > n = game (score g) (lives g) (levels!!n)
-  | otherwise = g {paused = True}
+  | n <= 25 = game (score g) (lives g) (generateLevel n)
+  | otherwise = g {status = Won}
   where
       n = lNext $level g
 

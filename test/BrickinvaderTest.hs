@@ -92,4 +92,4 @@ getGameWithAliensAndCountZero:: [Alien] -> Game
 getGameWithAliensAndCountZero a = getGameLevel0 { aliens = a, count = 0 }
 
 getGameLevel0:: Game
-getGameLevel0 = game 0 3 $head levels
+getGameLevel0 = game 0 3 (generateLevel 0)

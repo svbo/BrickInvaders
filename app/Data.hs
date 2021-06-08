@@ -6,9 +6,8 @@ type Name = ()
 type Coord = V2 Int
 
 data Tick = Tick
-
 data Cell = CanonCell | EmptyCell | ShotCell | AlienCell | UfoCell | BlockerCell0 | BlockerCell1 | BlockerCell2 | AlienShotCell
-
+data Status = Active | Paused | Lost | Won deriving (Show, Eq)
 data Direction = L | R | D deriving (Show, Eq)
 
 data Level = Level
@@ -37,8 +36,7 @@ data Blocker = Blocker
 
 data Game = Game
   { canon     :: Coord
-  , paused    :: Bool
-  , over      :: Bool
+  , status    :: Status
   , lives     :: Int
   , level     :: Level 
   , shots     :: [Coord]
@@ -57,10 +55,9 @@ data Game = Game
 game ::Int -> Int -> Level ->  Game 
 game s li l = Game
         { canon     = V2 10 0
-        , paused    = False
+        , status    = Active
         , shots     = []
         , alienShots= []
-        , over      = False
         , lives     = li
         , level     = l
         , aliens    = lAliens l
@@ -80,15 +77,6 @@ getBlockers x = b1 ++ b2
   where b1 = [Blocker (V2 (x+i) 2) 3| i <- [0..5]]
         b2 = [Blocker (V2 (x+1+i) 3) 3| i <- [0..3]]
 
--- | Returns a group of aliens 
--- f: X-Pos of first alien 
--- n: amount of aliens 
--- o: Offset the aliens have to their left neighbor 
--- y: Y-Pos of the alien group
--- h: Amount of hits it takes to kill the alien
-createAliens:: Int -> Int -> Int -> Int -> Int -> [Alien]
-createAliens f n o y h = [Alien (V2 (f+x*o) y) h | x <- [0..n]]
-
 -- | Returns an ufo
 createUfo:: [Ufo]
 createUfo = [Ufo (V2 0 height-1) 1]
@@ -96,7 +84,7 @@ createUfo = [Ufo (V2 0 height-1) 1]
 -- | Starts the game with the first level
 initGame :: IO Game
 initGame = do
-  let l = head levels
+  let l = generateLevel 0
   return $game 0 3 l
 
 -- | Definition of the game canvas
@@ -122,47 +110,47 @@ allBlockerLocations g = map bCoord $blockers g
 
 -- | Returns if the game is paused or over
 stopped :: Game -> Bool
-stopped g = paused g || over g
+stopped g = s == Lost || s == Paused || s == Won
+  where s = status g
 
 -- | Level definitions
-levels :: [Level]
-levels = [Level 
-          { lNext   = 1
-          , lAliens = createAliens 10 5 2 14 1 
-          , lSpeed  = 10
-          , lAShotSpeed = 40
-          , lUfoSpeed = 7
-          , lShots  = 1
-          },
-          Level 
-          { lNext   = 2
-          , lAliens = createAliens 10 5 2 14 1 ++ createAliens 11 5 2 13 1
-          , lSpeed  = 9
-          , lAShotSpeed = 30
-          , lUfoSpeed = 7
-          , lShots  = 1
-          },
-          Level 
-          { lNext   = 3
-          , lAliens = createAliens 10 6 2 14 1 ++ createAliens 11 6 2 13 1
-          , lSpeed  = 8
-          , lAShotSpeed = 25
-          , lUfoSpeed = 7
-          , lShots  = 1
-          },
-          Level 
-          { lNext   = 4
-          , lAliens = createAliens 10 7 2 14 1 ++ createAliens 11 7 2 13 1
-          , lSpeed  = 8
-          , lAShotSpeed = 20
-          , lUfoSpeed = 7
-          , lShots  = 1
-          },
-          Level 
-          { lNext   = 5
-          , lAliens = createAliens 10 5 2 14 1 ++ createAliens 11 5 2 13 1 ++ createAliens 10 5 2 12 1
-          , lSpeed  = 7
-          , lAShotSpeed = 20
-          , lUfoSpeed = 7
-          , lShots  = 1
-          } ]
+generateLevel:: Int -> Level
+generateLevel l = Level 
+          { lNext   = l + 1
+          , lAliens = createAliensForLevel l
+          , lSpeed  = getLevelSpeed l
+          , lAShotSpeed = getLevelSpeed l * 4
+          , lUfoSpeed =  getLevelSpeed l - 1
+          , lShots  = 1 + l `div` 5
+          }
+
+-- |Returns a group of Aliens according to the difficulty of the given level
+createAliensForLevel:: Int -> [Alien]
+createAliensForLevel l
+    | l < 5      = createAliens p n 2 14 1 
+    | l < 10     = createAliens p n 2 14 1 ++ createAliens (p + 1) n 2 13 2
+    | l < 15     = createAliens p n 2 14 1 ++ createAliens (p + 1) n 2 13 2 ++ createAliens p n 2 12 3
+    | l < 20     = createAliens p n 2 14 1 ++ createAliens (p + 1) n 2 13 2 ++ createAliens p n 2 12 3  ++ createAliens (p + 1) n 2 11 4
+    | otherwise  = createAliens p n 2 14 1 ++ createAliens (p + 1) n 2 13 2 ++ createAliens p n 2 12 3  ++ createAliens (p + 1) n 2 11 4  ++ createAliens p n 2 10 5
+    where n = 5 + l - (l `div` 5 * 5)
+          p = 15 - n
+
+-- | Returns a group of aliens 
+-- f: X-Pos of first alien 
+-- n: amount of aliens 
+-- o: Offset the aliens have to their left neighbor 
+-- y: Y-Pos of the alien group
+-- h: Amount of hits it takes to kill the alien
+createAliens:: Int -> Int -> Int -> Int -> Int -> [Alien]
+createAliens f n o y h = [Alien (V2 (f+x*o) y) h | x <- [0..n]]
+
+-- |Returns a number which is smaller the higher the level
+getLevelSpeed:: Int -> Int
+getLevelSpeed l
+    | l < 2 = 10
+    | l < 4 = 9
+    | l < 6 = 8
+    | l < 8 = 7
+    | l < 15 = 6
+    | l < 20 = 5
+    | otherwise = 4

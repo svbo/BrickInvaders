@@ -22,7 +22,7 @@ drawUI g = [ C.center $ padRight (Pad 2) (drawStats g) <+> drawGrid g ]
 -- | Draw the stats- and info-box at the left
 drawStats :: Game -> Widget Name
 drawStats g = hLimit 18
-  $ vBox [ drawGameOver $over g
+  $ vBox [ drawStatus $status g
          , drawInfoBox " Stats " $labledValue "Lives: " (show $lives g) <=> labledValue "Score: " (show $score g) <=> labledValue "Level: " (show $lNext $level g)
          , drawInfoBox " Info "  $str "Fire:    space" <=> str "Pause:   p    " <=> str "Restart: r    "
          ]
@@ -40,9 +40,10 @@ drawInfoBox l w = withBorderStyle BS.unicodeBold
   w
 
 -- | Draw the "GAME OVER" text
-drawGameOver :: Bool -> Widget Name
-drawGameOver False = emptyWidget
-drawGameOver True  = withAttr gameOverAttr $ padTop (Pad 2) $ padBottom (Pad 2) $ C.hCenter $ str "GAME OVER"
+drawStatus :: Status -> Widget Name
+drawStatus Won = withAttr gameOverAttr $ padTop (Pad 2) $ padBottom (Pad 2) $ C.hCenter $ str "YOU'RE A WINNER!!"
+drawStatus Lost  = withAttr gameOverAttr $ padTop (Pad 2) $ padBottom (Pad 2) $ C.hCenter $ str "GAME OVER"
+drawStatus _ = emptyWidget
 
 -- | Draw the game border and each cell in it
 drawGrid :: Game -> Widget Name

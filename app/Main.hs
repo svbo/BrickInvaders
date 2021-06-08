@@ -64,5 +64,5 @@ step g = if stopped g then g
       let sc = handleScore g movedShots -- update score
       let gUpd = g {aliens = a, ufo = u, shots = s, alienShots = as,
             count = nextCount g, aShotCount = nextAShotCount g, ufoCount = nextUfoCount g,
-            blockers = b, alienDir = d, score = sc ,lives = l, over = l == 0}
+            blockers = b, alienDir = d, score = sc ,lives = l, status = if l == 0 then Lost else status g}
       levelUp gUpd -- update level
